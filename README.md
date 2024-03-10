@@ -9,10 +9,11 @@ wrote tesht.
 
 ## Usage
 
+tests/test-mytest.sh
 ```tests/test-mytest.sh
 source ../lib/tesht.sh
 
-../myscript
+../myscript.sh
 assert "../myscript exits without an error code"
 ```
 
@@ -27,7 +28,7 @@ assert "../myscript exits without an error code"
 The core building block for all assertions in tesht is a generic return code
 assertion `assert`.
 
-```
+```test-mytest.sh
 source ../lib/tesht.sh
 
 true
@@ -44,7 +45,7 @@ assert "Will fail if file.txt doesn't exist"
 tesht will help you with mocking and tracking calls to functions and other
 commands using it's simple mock implementation.
 
-```
+```test-mytest.sh
 source ../lib/tesht.sh
 
 function mock_ip_impl() {
@@ -66,3 +67,4 @@ mock $ip_mock ip mock_ip_impl
 
 # Make sure a new route was added by myscript_using_ip.sh
 assert_called_with $ip_mock "route" "add" "192.168.0.0/24"
+```
