@@ -103,10 +103,6 @@ assert_contains() {
     __assert "\"$input\" contains \"$1\""
 }
 
-mock_create() {
-    mktemp
-}
-
 __mock_trace() {
     echo "${*:2}" >> "$1"
 }
