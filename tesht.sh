@@ -4,15 +4,26 @@ export TEST_FILE=$0
 
 if [[ "`basename $0`" = "tesht.sh" ]]; then
     declare -i failed_tests=0
+    declare -i run_tests=0
     echo "tesht - the swabian housewife's testing framework"
     echo Running tests...
 
+    shopt -s nullglob
     for t in ${1:-tests}/test-*; do
-        [[ -x "$t" ]] && echo && $t
-        if [[ $? -gt 0 ]]; then
-            failed_tests+=1
+        if [[ -x "$t" ]]; then
+            run_tests+=1
+            echo && $t
+            if [[ $? -gt 0 ]]; then
+                failed_tests+=1
+            fi
         fi
     done
+    shopt -u nullglob
+
+    if [[ $run_tests -eq 0 ]]; then
+        echo "No tests found."
+    fi
+
 
     exit $failed_tests
 fi
