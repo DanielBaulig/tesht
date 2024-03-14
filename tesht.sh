@@ -8,6 +8,9 @@ if [[ "`basename $0`" = "tesht.sh" ]]; then
     echo "tesht - the swabian housewife's testing framework"
     echo Running tests...
 
+    export TESHT_MOCK_PATH=`mktemp -d`
+    export PATH=$TESHT_MOCK_PATH:$PATH
+
     shopt -s nullglob
     for t in ${1:-tests}/test-*; do
         if [[ -x "$t" ]]; then
@@ -23,6 +26,8 @@ if [[ "`basename $0`" = "tesht.sh" ]]; then
     if [[ $run_tests -eq 0 ]]; then
         echo "No tests found."
     fi
+
+    rm -rf $TESHT_MOCK_PATH
 
 
     exit $failed_tests
@@ -109,6 +114,20 @@ __mock_trace() {
 
 make_mock() {
     local mock=`mktemp`
+
+    local name="$1"
+    local mock_fn="$2"
+    local mock_impl=""
+    if [[ ! -z $mock_fn ]]; then
+      mock_impl="\n`declare -f $mock_fn`\n$mock_fn \$@"
+    fi
+    local impl="#!/bin/sh\n__mock_trace \"$mock\" \"\$@\"$mock_impl"
+    echo -e "$impl" > $TESHT_MOCK_PATH/$name
+    chmod u+x $TESHT_MOCK_PATH/$name
+
+    MOCKS+=("$mock")
+    echo $name > $mock
+
     echo $mock
 }
 
@@ -118,14 +137,6 @@ __noop() {
 
 mock() {
     local mock="$1"
-    local name="$2"
-    local mock_fn="${3:-"__noop"}"
-    local impl="function $name() { __mock_trace \"$mock\" \"\$@\"; $mock_fn \$@; }"
-    eval $impl
-    export -f "$name" "$mock_fn"
-
-    MOCKS+=("$mock")
-    echo $name > $mock
 }
 
 mock_name() {
