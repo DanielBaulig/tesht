@@ -60,11 +60,10 @@ function mock_ip_impl() {
     # All other invokcations will not print anything
 }
 
-ip_mock=`make_mock`
-mock $ip_mock ip mock_ip_impl
+ip_mock=`make_mock ip mock_ip_impl`
 
 ../myscript_using_ip.sh
 
 # Make sure a new route was added by myscript_using_ip.sh
-assert_called_with $ip_mock "route" "add" "192.168.0.0/24"
+assert_called_with $ip_mock "route add 192.168.0.0/24"
 ```
