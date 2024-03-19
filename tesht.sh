@@ -1,6 +1,16 @@
 #!/bin/sh
 
-export TEST_FILE=$0
+__gray() {
+    echo "\e[90m$*\e[0m"
+}
+
+__red() {
+    echo "\e[31m$*\e[0m"
+}
+
+__green() {
+    echo "\e[32m$*\e[0m"
+}
 
 if [[ "`basename $0`" = "tesht.sh" ]]; then
     declare -i failed_tests=0
@@ -15,7 +25,11 @@ if [[ "`basename $0`" = "tesht.sh" ]]; then
     for t in ${1:-tests}/test-*; do
         if [[ -x "$t" ]]; then
             run_tests+=1
-            echo && $t
+            echo
+            echo -e "`__gray $t`"
+
+
+            $t 2>/dev/null
             if [[ $? -gt 0 ]]; then
                 failed_tests+=1
             fi
@@ -36,21 +50,6 @@ fi
 MOCKS+=()
 declare -gi assertions=0
 declare -i failures=0
-
-__gray() {
-    echo "\e[90m$*\e[0m"
-}
-
-__red() {
-    echo "\e[31m$*\e[0m"
-}
-
-__green() {
-    echo "\e[32m$*\e[0m"
-}
-
-echo -e "`__gray $TEST_FILE`"
-
 
 __cleanup() {
     if [[ $failures -eq 0 ]]; then
