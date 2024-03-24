@@ -1,37 +1,37 @@
-#!/bin/sh
+#!/bin/bash
 
 __gray() {
-    echo "\e[90m$*\e[0m"
+    echo "\033[90m$*\033[0m"
 }
 
 __red() {
-    echo "\e[31m$*\e[0m"
+    echo "\033[31m$*\033[0m"
 }
 
 __green() {
-    echo "\e[32m$*\e[0m"
+    echo "\033[32m$*\033[0m"
 }
 
-if [[ "`basename $0`" = "tesht.sh" ]]; then
+if [[ "$(basename $0)" = "tesht.sh" ]]; then
     declare -i failed_tests=0
     declare -i run_tests=0
     echo "tesht - the swabian housewife's testing framework"
     echo Running tests...
 
-    export TESHT_MOCK_PATH=`mktemp -d`
+    export TESHT_MOCK_PATH=$(mktemp -d)
     export PATH=$TESHT_MOCK_PATH:$PATH
 
     shopt -s nullglob
     for t in ${1:-tests}/test-*; do
         if [[ -x "$t" ]]; then
-            run_tests+=1
-            echo
-            echo -e "`__gray $t`"
+            run_tests=$((run_tests + 1))
+            echo ""
+            echo -e "$(__gray $t)"
 
 
-            $t 2>/dev/null
+            $t 
             if [[ $? -gt 0 ]]; then
-                failed_tests+=1
+                failed_tests=$((failed_tests + 1))
             fi
         fi
     done
@@ -48,14 +48,14 @@ if [[ "`basename $0`" = "tesht.sh" ]]; then
 fi
 
 MOCKS+=()
-declare -gi assertions=0
+declare -i assertions=0
 declare -i failures=0
 
 __cleanup() {
     if [[ $failures -eq 0 ]]; then
-        echo -e "`__green SUCCESS` ($assertions/$assertions assertions passed)"
+        echo -e "$(__green SUCCESS) ($assertions/$assertions assertions passed)"
     else 
-        echo -e "`__red FAILURE` (`expr $assertions - $failures`/$assertions assertions passed)"
+        echo -e "$(__red FAILURE) ($(expr $assertions - $failures)/$assertions assertions passed)"
     fi
 
     for mock in ${MOCKS[*]} ; do
@@ -76,7 +76,7 @@ __print_reference() {
 }
 
 __fail() {
-    failures+=1
+    failures=$((failures +1))
     local -i stack_depth=`expr $2 + 1`
     local reference=`__print_reference $stack_depth`
     echo -e "`__red ✗` $1\n`__gray $reference`" 1>&2
@@ -85,7 +85,7 @@ __fail() {
 
 __assert() {
     local result=$?
-    assertions+=1
+    assertions=$((assertions + 1))
     if [ ! "$result" -eq 0 ]
     then
         __fail "$1" 2
