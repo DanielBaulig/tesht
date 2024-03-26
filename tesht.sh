@@ -30,7 +30,7 @@ if [[ "$(basename $0)" = "tesht.sh" ]]; then
 
 
             $t 
-            if [[ $? -gt 0 ]]; then
+            if [[ $? -ne 0 ]]; then
                 failed_tests=$((failed_tests + 1))
             fi
         fi
@@ -79,17 +79,33 @@ __fail() {
     failures=$((failures +1))
     local -i stack_depth=`expr $2 + 1`
     local reference=`__print_reference $stack_depth`
-    echo -e "`__red ✗` $1\n`__gray $reference`" 1>&2
+    echo -e "$(__red ✗) $([[ $__ASSERT_FAILURE -ne 0 ]] && echo "Not ")$1\n$(__gray $reference)" 1>&2
 
 }
 
+
+__ASSERT_FAILURE=0
 __assert() {
     local result=$?
     assertions=$((assertions + 1))
-    if [ ! "$result" -eq 0 ]
+    if [[ "$__ASSERT_FAILURE" -eq 0 ]]
     then
-        __fail "$1" 2
+      if [ "$result" -ne 0 ]
+      then
+          __fail "$1" 2
+      fi
+    else
+      if [ "$result" -eq 0 ]
+      then
+          __fail "$1" 2
+      fi
     fi
+    __ASSERT_FAILURE=0
+}
+
+assert_not() {
+  __ASSERT_FAILURE=$((1 - __ASSERT_FAILURE))
+  $@
 }
 
 assert() {
